@@ -54,10 +54,11 @@ void render_frame(double A,double B){
             double L = cos_phi*cos_theta*sinB - cosA*cos_theta*sin_phi - sinA*sin_theta + cosB*(cosA*sin_theta - cos_theta*sinA*sin_phi);
 
             int x_coordinate = (int) ((SCREEN_WIDTH / 2) + K1*current_depth*x);
-            int y_coordinate = (int) ((SCREEN_HEIGHT / 2) - K1*current_depth*y);
+            int y_coordinate = (int) ((SCREEN_HEIGHT / 2) - K1*current_depth*y*0.5);
 
             if (x_coordinate < 0 || x_coordinate >= SCREEN_WIDTH || y_coordinate < 0 || y_coordinate >= SCREEN_HEIGHT)
                 continue;
+
             
             if(L > 0 && current_depth > depth[y_coordinate][x_coordinate]){
                 depth[y_coordinate][x_coordinate] = current_depth;
