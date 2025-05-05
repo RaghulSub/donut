@@ -16,7 +16,7 @@
 #define SCREEN_HEIGHT 40
 
 #define height 5
-#define width 5
+#define width 1
 #define length 5
 
 
@@ -27,8 +27,10 @@ float max(float a,float b){
     return b;
 }
 
-const int K2 = 20;
+const int K2 = 200;
 const int K1 = (SCREEN_WIDTH * K2 * 3) / (8 * (height));
+
+float lx = 0, ly = 1, lz = -1;
 
 
 const char *gradient = ".,-~:;=!*#$@";
@@ -55,34 +57,39 @@ void render_frame(float A,float B){
             for(float z = ORIGIN_Z-(height/2);z <= ORIGIN_Z+(height/2);z += z_spacing){
                 
 
+
                 float xp = x*cosB - sinB*(y*cosA - z*sinA);
                 float yp = x*sinB + (y*cosA -  z*sinA)*cosB;
                 float zp = y*sinA + z*cosA;
 
-                // float xp = cosA * x - sinA * y;
-                // float yp = sinA * x + cosA * y;
-                // float zp = z;
+                // float xp = cosB*x - (cosA*sinB*y) + sinA*sinB*z;
+                // float yp = sinB*x + cosA*cosB*y - sinA*cosB*z;
+                // float zp = sinA*y + cosA*z;
+
+                float nx = xp, ny = yp, nz = -zp;
+                float norm = sqrt(nx*nx + ny*ny + nz*nz);
+                nx /= norm; ny /= norm; nz /= norm;
 
 
                 if(zp == 0) continue;
                 
-                float current_depth = 1.0/(zp + K2);
+                float current_depth = 1.0/(zp+K2);
 
                 int x_coordinate = (int) ((SCREEN_WIDTH / 2) + K1*current_depth*xp);
-                int y_coordinate = (int) ((SCREEN_HEIGHT / 2) - K1*current_depth*yp);
+                int y_coordinate = (int) ((SCREEN_HEIGHT / 2) - K1*current_depth*yp*0.5);
 
                 if (x_coordinate < 0 || x_coordinate >= SCREEN_WIDTH || y_coordinate < 0 || y_coordinate >= SCREEN_HEIGHT)
                     continue;
 
-                // float L = 1;
-                // float L = (xp*cosB - sinB*(yp*cosA - zp*sinA)) + (xp*sinB + (yp*cosA -  zp*sinA)*cosB) + (yp*sinA + zp*cosA);
-                float L = (yp*sinA + zp*cosA);
+                float L = nx*lx + ny*ly + nz*lz;
+                L = max(L,-L);
 
                 if(L > 0 && current_depth > depth[y_coordinate][x_coordinate]){
                     depth[y_coordinate][x_coordinate] = current_depth;
-                    int idx = (int)(L * (grad_len - 1));
+                    int idx = (int)(L * (grad_len - 1) + 0.5);
                     idx = idx < 0 ? 0 : idx >= grad_len ? grad_len - 1 : idx;
                     screen[y_coordinate][x_coordinate] = gradient[idx];
+
                 }
             }
         }
@@ -101,7 +108,7 @@ void render_frame(float A,float B){
 
 int main(){
     float i = 0.0;
-    for(float i = 0;;i+=0.01)
+    for(float i = 0;;i+=0.0005)
         render_frame(i,i);
     return 0;
 }
